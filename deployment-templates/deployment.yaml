@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jekyll-website
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: jekyll-website
+  template:
+    metadata:
+      labels:
+        app: jekyll-website  
+    spec:
+      containers:
+      - name: website
+        image: jekyll-app:1.0.0
+        ports:
+          - containerPort: 80
