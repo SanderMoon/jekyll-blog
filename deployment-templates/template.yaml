@@ -24,9 +24,9 @@ spec:
     spec:
       containers:
       - name: website
-        image: smoonemans/jekyll-app:1.0.0
+        image: smoonemans/jekyll-blog:1.0.0
         ports:
-          - containerPort: 4000
+          - containerPort: 80
 ---
 #Loadbalancer for the deployment
 ---
@@ -40,7 +40,8 @@ spec:
     app: jekyll-blog
   ports:
   - protocol: TCP
-    port: 4000
+    port: 80
+    targetPort: 80
   type: LoadBalancer
   
 ---
@@ -64,5 +65,5 @@ spec:
           service:
             name: jekyll-service
             port:
-              number: 4000
+              number: 80
   ingressClassName: nginx
