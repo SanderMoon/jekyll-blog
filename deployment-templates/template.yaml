@@ -1,0 +1,68 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: jekyll
+  labels:
+    name: jekyll
+---
+#The deployment template, containing a custom image
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jekyll-website
+  namespace: jekyll
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: jekyll-blog
+  template:
+    metadata:
+      labels:
+        app: jekyll-blog  
+    spec:
+      containers:
+      - name: website
+        image: smoonemans/jekyll-app:1.0.0
+        ports:
+          - containerPort: 4000
+---
+#Loadbalancer for the deployment
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jekyll-service
+  namespace: jekyll
+spec:
+  selector:
+    app: jekyll-blog
+  ports:
+  - protocol: TCP
+    port: 4000
+  type: LoadBalancer
+  
+---
+#Ingress for the blog
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jekyll-ingress
+  namespace: jekyll
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: manofthemoon.nl
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: jekyll-service
+            port:
+              number: 4000
+  ingressClassName: nginx
