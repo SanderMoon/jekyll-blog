@@ -62,4 +62,4 @@ jobs:
           workflow: Push Tag to Manifest
           repo:  SanderMoon/jekyll-kubernetes-infra
           token: ${{ secrets.PERSONAL_TOKEN }}
-          inputs: '{ "tag": ${{ steps.tag_version.outputs.new_tag }}}'
+          inputs: '{ "tag": "${{ steps.tag_version.outputs.new_tag }}"}'
