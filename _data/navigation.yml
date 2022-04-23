@@ -6,7 +6,5 @@ main:
   #   url: /year-archive/
   - title: "Technical"
     url: /categories/#technical/
-  - title: "Traveling"
-    url: /categories/#traveling/
   - title: "About"
     url: /about/
