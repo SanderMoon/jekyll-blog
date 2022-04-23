@@ -163,7 +163,7 @@ After this follow step 4 of the getting started page to change your admin passwo
 ## Access ArgoCD UI
 You can now access the ArgoCD UI by browsing to the external IP that was assigned to the service!
 
-![alt]({{ site.url }}{{ site.baseurl }}/assets/images/ArgoCD-UI.png)
+![alt]({{ site.url }}{{ site.baseurl }}/assets/images/ArgoCD-UI.PNG)
 
 # Conclusion
 You are now able to use argoCD on your Raspberry Pi cluster!
