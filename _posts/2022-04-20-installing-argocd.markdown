@@ -1,9 +1,11 @@
 ---
 layout: single
 title:  "Installing ArgoCD on Raspberry Pi 4 with microk8s"
-date:   2022-01-13 13:30:05 +0100
+date:   2022-04-20 13:30:05 +0100
 categories: Technical
 toc: true
+header:
+  teaser: /assets/images/argo-teaser.png
 ---
 
 Currently this website is running on my Raspberry Pi cluster at home.
