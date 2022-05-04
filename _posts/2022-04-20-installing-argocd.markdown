@@ -10,7 +10,7 @@ header:
 
 Currently this website is running on my Raspberry Pi cluster at home.
 The cluster consists of three Raspberry Pi 4 boards, running in a high availability (HA) configuration in Kubernetes.
-I've used Microk8s as a Kubernetes distribution and wrote a [blogpost]() about setting that up previously.
+I've used Microk8s as a Kubernetes distribution and will write a blogpost about setting that up in the near future.
 
 In order to easily push changes to my cluster I needed a CI/CD pipeline of some sort.
 I decided to use GitHub Actions for CI and ArgoCD for CD. 
