@@ -1,11 +1,11 @@
 ---
 layout: single
-title:  "Self-host a blog part 0: Setting up the infrastructure"
+title:  "Self-host a blog part 0: The Plan"
 date:   2022-05-03 19:48:05 +0000
 categories: Technical
 toc: true
 header:
-  teaser: /assets/images/raspberrypi-teaser.png
+  teaser: /assets/images/CICD-flow.PNG
 ---
 
 Welcome to my series about self-hosting a blog!
@@ -24,102 +24,76 @@ To name a few:
 
 In this series I will explain step-by-step how to manage all of these things. 
 
-Footnote: the way I host my website is rather over-engineered, thus there are many easier and probably cheaper alternatives for hosting a website. I wanted to expand my knowledge on certain tooling so I used them as the foundation for my journey. The result? A highly available blog that is secure, responsive and has (near) zero-downtime, and a platform that can be used for many different software projects.
+The way I host my website is rather over-engineered and definitely not all perfect, so there are easier and probably cheaper alternatives for hosting a website if that's the only goal in mind. I wanted to expand my knowledge on certain tooling so I used them as the foundation for my journey. The result? A highly available blog that is secure, responsive and has (near) zero-downtime, and a platform that can be used for many different software projects.
 
-Here is an incomplete list of tooling and hardware used for this project:
-- Raspberry Pi 4 4GB: a computer
-- Microk8s: a Kuebernetes
-- Jekyll: a static website generator
-- ArgoCD: a continuous deployment controller
-- GitHub actions: A Git workflow manager
+**Note: this first post is very technical and mostly intended for more experienced readers who would like a quick overview. It is not expected from the reader to understand all technologies and terms used in this post, as they will be explained in the rest of the series.**
 
-Still interested? Then keep reading!
+## Choosing a Web Development Framework
+When creating a website as a hobby project, there are a number of factors that can be important for choosing a technology stack. Like:
+- Your current skillset and your ambitions
+- Your use-case
+- Required functionalities
+- Amount of available time
 
-## Let's talk hardware
-In order to run anything, you need a server. A server means hardware. Hardware means a shopping list, and a shopping list means making expenses. 
+I'm expecting my audience to consists mostly out of hobbyists or beginner level (web)developers. Creating a website can seem a daunting task if you have no or little web-developement knowledge. That's because it kind of is, especially if you want to dedicate your free time to setting up your website. Out of experience I can say that the more ambitious you start your project planning, the less likely it will be that you will ever finish it. My advise is: keep your project very simple at the start!
 
-Expenses to look out for:
-- Initial cost
-- Power consumption 
+### Jekyll
+As a back-end developer with no ambitions to learn a ton about front-end, I looked for a framework that is easy to set up, that requires minimal web-development experience and that makes writing blogs relatively easy. I've found these point in the framework [Jekyll](https://jekyllrb.com/). 
 
-Some other things that you should keep in mind when purchasing hardware:
-- Computing power requirements
-- Memory requirements
-- Processor architecture
-- Options for redundancy
-- Noise levels
-- Form factor
-- Ease of installation
+The upsides of Jekyll:
+- You write blogposts in Markdown
+- No Javascript, CSS and Ruby knowledge required
+- No database
+- Easy to set up
+- Lightweight
+- Simple
 
-### Single-board Computers
-As we're hosting a static blogging website we don't need the most sofisticated hardware. Currently tiny single-board computers like Raspberry Pi have more than enough computation power and memory to do the job. They are small, quiet and power efficient and really inexpensive compared to a full-blown server, so let's take three of them.
+Downsides of Jekyll:
+- Every change or addition of a blogpost requires a redeployment of the whole website because it is [stateless](https://www.redhat.com/en/topics/cloud-native-apps/stateful-vs-stateless)
+- Adding pictures is rather [inconvenient](https://jekyllrb.com/docs/posts/#including-images-and-resources)
 
-Having multiple Raspberry Pi's is handy as it allows for compute redundancy. If one of them fails, the others can take over. Redundancy is a requirement for a highly available platform. 
 
-Depending on your needs and budget, you can also choose to use a single Raspberry Pi for hosting. However, if the board, the SD card or the power fails, your website will be down and it will take some time to recover. 
+It's a perfect framework for writing technical blogs, but it's not really suited for any other purposes. If you're more interested in general-purpose bogs, you could check out [Wordpess](https://wordpress.com/nl/) and check out some blogpost if you want to [self-host](https://projects.raspberrypi.org/en/projects/lamp-web-server-with-wordpress) it. 
 
-### Downsides
-There are downsides to using a Raspberry Pi for hosting software. The main one is that our chosen Raspberry Pi has an ARM64 CPU architecture, which basically means that it differs from more commonly used architectures like AMD64 or x86-64. This means that common software packages are often not officially supported out of the box and requires some tweaking to get it working, if possible at all. You'll see further in this series that we need to tweak quite some things to make it all work. 
+Note: If you already have experience with web-application there are many other frameworks that can help you create an awesome website. I chose Jekyll because it's good at what it does, and will save me some time researching how to properly utilize fancy javascript frameworks. 
 
-## The shopping list
-So we've decided to use one or multiple Raspberry Pi's as our computer. What else do we need? And what does it cost?
+## Hardware and infrastructure
+In order to run your website you will need hardware. Because I want full control over my website and want to learn the end-to-end process of hosting a website, I will host my own website, on my own hardware. If you don't want to deal with hardware, networking and infrastructure you can use Webhosting services like [DigitalOcean](https://www.digitalocean.com). I've written this blog purely for people who are itnerested in hosting their own website, so you might want to stop reading if you like to use webhosting providers. 
 
-| **Amount** | **Item**                                                                                                                          | **Description**                  | **Total Price (EUR)** |
-|------------|-----------------------------------------------------------------------------------------------------------------------------------|----------------------------------|-----------------------|
-| 3x         | [Raspberry Pi 4 4GB](https://tweakers.net/pricewatch/1414470/raspberry-pi-4-model-b-4gb-ram.html)                                 | Your single-board computers      |                180.00 |
-| 3x         | [MicroSDXC card w/ adapter(128 GB)](https://tweakers.net/pricewatch/1741912/samsung-evo-plus-microsd-card-2021-128gb.html)        | Internal storage                 |                 38.00 |
-| 3x         | [USB A to USB C cable (0.5m)](https://www.allekabels.nl/usb-c-kabel/11518/2259588/usb-c-naar-usb-a-kabel-20.html)                 | Power cables                     |                 24.00 |
-| 3x         | [Network cable (0.25m)](https://www.allekabels.nl/cat5e-kabel/15545/1280381/cat-5e-uutp-netwerkkabel.html)                        | Pi to network switch             |                  2.70 |
-| 2x         | [RPi cluster rack](https://www.kiwi-electronics.nl/nl/stapelbare-behuizing-met-ventilator-voor-raspberry-pi-9974)                 | x2 so we can mount all boards    |                  26.0 |
-| 1x         | [Network cable (1.5m)](https://www.allekabels.nl/cat5e-kabel/15545/1280381/cat-5e-uutp-netwerkkabel.html)                         | Switch to Router                 |                  1.50 |
-| 1x         | [Power Strip with USB ports](https://www.allekabels.nl/stekkerdoos/7069/3877776/5-voudige-stekkerdoos-met-3-usb-poorten-wit.html) | Number of sockets of your choice |                 25.00 |
-| 1x         | [Network Switch](https://www.coolblue.nl/product/536278/tp-link-tl-sg105e.html)                                                   | Gigabit                          |                 25.00 |
-|            | **TOTAL**                                                                                                                         |                                  |            **322.20** |
+### The hardware
+For this project I use three Raspberry Pi micro computers as the hardware for my website. In my next blogpost I explain the decision on why three of these boards and I will share the shopping list that is used. There I will also explain how I set these up. A Raspberry Pi is perfect for a project like this. They are cheap, small and efficient. They are not the fastest, but can easily host our website. 
 
-Above you can see the complete shopping list that I used to create my whole set-up. You may adjust to your needs. You can also save some money by using some cables or hardware that you have laying around at home. 
+### Infrastructure management
+When hosting your own website, managing infrastructure will be an important topic to cover. You'll be responsible for everything regarding your website. Hardware failures, security, unexpected software failures, IP routing are all part of the deal when self-hosting, which can give you a headache if you don't think this through. There will be a seperate blog post that will go in-depth into the infrastructure set-up regarding the software used and networking.
 
-## Laying the foundation
+I've decided to use [Kubernetes](https://kubernetes.io/) as an orchestrator for all my infrastructure. Kubernetes is an open-source system for automating deployment, scaling, and management of containerized applications. If this is all magic to you, don't worry, it will all be explained in my blogs, so stay tuned! 
 
-After all of your packages arive we can start building!
+As our hardware is quite limited on the memory and cpu, we use a light-weight implementation of Kubernetes called [Microk8s](https://microk8s.io/). Microk8s also supports the creation of a [multi-node cluster](https://microk8s.io/docs/high-availability) across your RPi boards, which means that your RPi's work together to manage the website! This means that if one of the boards fail, the others can take over. This makes for a very robust system for minimal downtime applications. And best of all; once it is set-up you can host other applications next to your website as well.
 
-**Images coming soon**
+### Build and Deployment Philosophy
+When you are making changes to your website, you want it to reflect on your website. But how do we get these changes to our hardware? As you don't want any downtime or hassle with manual file transfer and deployments we are implementing the principles of [CI/CD](https://en.wikipedia.org/wiki/CI/CD).
 
-## Installing the OS
+We set up a [Github repository](https://github.com/SanderMoon/jekyll-blog) to host our source code. Whenever you make changes to your website, you push the code to the repository. Because we are using Kubernetes, we need to create a docker image out of our code, together with a webserver, so that eventually we can host it in our RPi cluster. This means we need to build our application into a docker image and send it to [Dockerhub](https://hub.docker.com/repository/docker/smoonemans/jekyll-blog). To do this we can apply the strategy of [Continuous Integration]() by creating a build pipeline in [GitHub Actions](https://github.com/SanderMoon/jekyll-blog/blob/master/.github/workflows/docker-image.yml). This will automatically, on a new push, build your docker image and push it to DockerHub. 
 
-In order to finish our server set-up we need an OS.
-Choice of OS is often quite personal and as I did not have a lot of experience with linux when i started this project, I decided to go with Ubuntu Server 21.04. There is a [neat little guide](https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi) on the Ubuntu website on how to set it up on your Raspberry Pi. You just have to do this for each of your Raspberry Pi's and we should be good to go!
+Now we just need to get the docker image in our RPi cluster. We can apply the strategy of Continuous Delivery by pulling the new docker image to the cluster when changes are detected. A great tool for Kubernetes that manages this automatically is ArgoCD. ArgoCD sits in your cluster and waits for changes to your infrastructure. If any changes arise, it will pull the new information and apply it directly to your cluster and manages it so that you don't have any downtime. 
 
-Some assumptions before installing the OS:
-- I'm using ethernet cables and a network switch to directly connect to our router. So no WiFi!
-- We connect remotely with SSH, like defined in the [Ubuntu guide](https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi#4-boot-ubuntu-server)
+we will have a seperate [Github repository](https://github.com/SanderMoon/jekyll-kubernetes-infra) for infrastructure management. You can manage the desired infrastructure state in Kubernetes by creating manifest files for your resources. ArgoCD will monitor this repository for changes while our GitHub Actions pipeline updates the docker image tags of our website resource. 
 
-## Reserving an IP address for your Raspberry Pi boards.
-The IP addresses of the devices in your home network are prone to change when the configuration of your router changes or your router is reset. As we will frequently want to access our Raspberry Pi's and also let them communicate with each other, we will need a stable IP address and thus need to reserve an IP address in your home network. Every router comes with a DHCP server that allows you to do this. 
+This gives us an end-to-end CI/CD pipeline for our website!
+Below is an illustration of the full flow, which should make it easier to understand. 
 
-### Finding your router's IP
-You'll have to log in to your router, which requires finding your router's IP address. 
-[This guide](https://www.expressvpn.com/what-is-my-ip/router-ip) should be able to help you.
+![alt]({{ site.url }}{{ site.baseurl }}/assets/images/CICD-flow.PNG)
 
-### Finding the MAC address of your Pi
-The second thing you need is the MAC-address of your Raspberry Pi board. This should be in the same windows (ipconfig) where you found the IP address of your Raspberry Pi, outlined in the Ubuntu guide. 
+## Architecture
+The below image shows all the different components needed for traffic to flow from someones computer to your website:
+![alt]({{ site.url }}{{ site.baseurl }}/assets/images/traffic-flow.PNG)
 
-### Create a reservation
-Each router differs, so it's hard to go in depth on this part but it should look somewhat like this:
-
-Now:
-1. Log in to your router
-2. Go to DHCP setting
-3. Add Reservation
-4. Put in the IP address
-5. Put in the MAC address
-6. Save the reservation
-7. Restart the router if needed
-
-Most router brands have guides available on how to do this.
-
-## Conclusion
-You should now have three separate single-board computers running!
-
-In the next blog we will set up Kubernetes on these boards, so we can actually combine them into a highly available cluster. 
-
+Topics of future blogs:
+1. [Setting up the hardware](({{ site.url }}{{ site.baseurl }}/technical/self-hosting-a-blog-part-1/))
+2. Setting up a highly available cluster in Microk8s
+3. Setting up a Jekyll website and manually deploy it to the cluster
+4. Registering your domain name and routing traffic to your cluster
+5. Creating your repositories and setting up GitHub Actions
+6. [Installing and setting up ArgoCD on your Microk8s cluster]({{ site.url }}{{ site.baseurl }}/technical/installing-argocd/)
+7. Making your website traffic secure with Kubernetes Cert manager and Let's Encrypt
 
